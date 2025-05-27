@@ -1,5 +1,5 @@
-require('dotenv').config();
 require('express-async-errors');
+require('dotenv').config();
 
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -25,7 +25,7 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
-app.use(notFound);
+// app.use(notFound);
 app.use(errorHandler);
 app.use('/api/auth', authRoutes);
 
