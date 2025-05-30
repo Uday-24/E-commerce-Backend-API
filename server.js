@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 connectDB();
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => console.log('Server is running on 5000'))
