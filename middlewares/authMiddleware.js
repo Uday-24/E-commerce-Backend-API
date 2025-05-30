@@ -12,7 +12,6 @@ const protected = (req, res, next) => {
     try{
         const decode = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         req.user = decode;
-        console.log(req.user);
         next();
     }catch(error){
         next(new AppError('Expired token', 401));
