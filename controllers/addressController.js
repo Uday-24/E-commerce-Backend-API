@@ -17,7 +17,7 @@ const getOwnerAddress = async (addressId, userId, next) => {
 // @access  Private
 const getAllAddresses = async (req, res, next) => {
     const addresses = await Address.find({ user: req.user.userId });
-    if (!addresses) return next(new AppError('Addresses not found', 404));
+    if (!addresses || addresses.length === 0) return next(new AppError('Addresses not found', 404));
     res.status(200).json({ success: true, message: 'Address retrieved successfully', addresses });
 };
 
@@ -78,9 +78,11 @@ const deleteAddress = async (req, res, next) => {
     const address = await getOwnerAddress(req.params.id, req.user.userId, next);
     if (!address) return;
 
+    if(address.isDefault) return next(new AppError('Default address cannot be deleted', 400));
+
     await address.deleteOne();
 
-    res.status(204).json({ success: true, message: 'Address deleted successfully', address });
+    res.status(200).json({ success: true, message: 'Address deleted successfully', address });
 };
 
 // @desc    Set an address as default
