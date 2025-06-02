@@ -3,16 +3,25 @@ const Address = require('../models/Address');
 const AppError = require('../utils/AppError');
 const { isOwner } = require('../utils/checkOwnership');
 
+const getOwnerAddress = async (addressId, userId, next) => {
+    const address = await Address.findById(addressId);
+    if(!address || !isOwner(address.user, userId)) {
+        next(new AppError('Address not found', 404));
+        return null;
+    }
+    return address;
+}
+
 const getAllAddresses = async (req, res, next) => {
     const addresses = await Address.find({ user: req.user.userId });
     if (!addresses) return next(new AppError('Addresses not found', 404));
-    res.status(200).json({ success: true, message: 'Gets all addresses', addresses });
+    res.status(200).json({ success: true, message: 'Address retrieved successfully', addresses });
 }
 
 const getAddress = async (req, res, next) => {
-    const address = await Address.findById(req.params.id);
-    if (!address || !isOwner(address.user, req.user.userId)) return next(new AppError('Address not found', 404));
-    res.status(200).json({ success: true, message: 'You got address', address });
+    const address = await getOwnerAddress(req.params.id, req.user.userId, next);
+    if(!address) return;
+    res.status(200).json({ success: true, message: 'Address retrieved successfully', address });
 }
 
 const createAddress = async (req, res, next) => {
@@ -24,7 +33,7 @@ const createAddress = async (req, res, next) => {
         ...req.body
     });
 
-    if (!address) return next(new AppError('Address doest not created', 400));
+    if (!address) return next(new AppError('Address was not created', 400));
 
     if (addressCount === 0) {
         address.isDefault = true;
@@ -32,12 +41,12 @@ const createAddress = async (req, res, next) => {
 
     await address.save();
 
-    res.status(201).json({ success: true, message: 'New address created', address });
+    res.status(201).json({ success: true, message: 'Address created successfully', address });
 }
 
 const updateAddress = async (req, res, next) => {
-    const address = await Address.findById(req.params.id);
-    if (!address || !isOwner(address.user, req.user.userId)) return next(new AppError('Address not found', 404));
+    const address = await getOwnerAddress(req.params.id, req.user.userId, next);
+    if(!address) return;
 
     const updatedAddress = await Address.findByIdAndUpdate(
         req.params.id,
@@ -47,24 +56,24 @@ const updateAddress = async (req, res, next) => {
 
     if (!updatedAddress) return next(new AppError('Something went wrong', 400));
 
-    res.status(200).json({ success: true, message: 'Address updated', updatedAddress });
+    res.status(200).json({ success: true, message: 'Address updated successfully', updatedAddress });
 }
 
 const deleteAddress = async (req, res, next) => {
-    const address = await Address.findById(req.params.id);
-    if (!address || !isOwner(address.user, req.user.userId)) return next(new AppError('Address not found', 404));
+    const address = await getOwnerAddress(req.params.id, req.user.userId, next);
+    if(!address) return;
 
     await address.deleteOne();
 
-    res.status(200).json({ success: true, message: 'Address deleted', address });
+    res.status(204).json({ success: true, message: 'Address deleted successfully', address });
 }
 
 const selectDefaultAddress = async (req, res, next) => {
-    const address = await Address.findById(req.params.id);
-    if (!address || !isOwner(address.user, req.user.userId)) return next(new AppError('Address not found', 404));
+    const address = await getOwnerAddress(req.params.id, req.user.userId, next);
+    if(!address) return;
 
     if (address.isDefault) {
-        return res.status(200).json({ success: true, message: 'Default address selected' });
+        return res.status(200).json({ success: true, message: 'Default address updated successfully' });
     }
     
     const defaultAddress = await Address.findOne({ user: req.user.userId, isDefault: true });
@@ -75,8 +84,8 @@ const selectDefaultAddress = async (req, res, next) => {
 
     await defaultAddress.save();
     await address.save();
-    
-    return res.status(200).json({ success: true, message: 'Default address selected' });
+
+    return res.status(200).json({ success: true, message: 'Default address updated successfully' });
 }
 
 module.exports = {
