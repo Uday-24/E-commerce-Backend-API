@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const Wishlist = require('./Wishlist');
 const reviewSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -56,5 +56,14 @@ const productSchema = new mongoose.Schema({
         default: 0
     }
 }, { timestamps: true });
+
+productSchema.post('findOneAndDelete', async function (doc) {
+    if (doc) {
+        await Wishlist.updateMany(
+            { products: doc._id },
+            { $pull: { products: doc._id } }
+        );
+    }
+});
 
 module.exports = mongoose.model('Product', productSchema);
