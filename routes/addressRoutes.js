@@ -10,6 +10,6 @@ router.get('/:id', protected, getAddress);
 router.post('/', protected, addressValidation, validateRequest, createAddress);
 router.put('/:id', protected, addressValidation, validateRequest, updateAddress);
 router.delete('/:id', protected, deleteAddress);
-router.post('/select-default-address/:id', protected, selectDefaultAddress);
+router.post('/:id/default', protected, selectDefaultAddress);
 
 module.exports = router;
