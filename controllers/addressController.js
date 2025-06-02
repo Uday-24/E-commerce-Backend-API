@@ -14,19 +14,27 @@ const getAddress = async (req, res, next) => {
     if (!address || !isOwner(address.user, req.user.userId)) return next(new AppError('Address not found', 404));
     res.status(200).json({ success: true, message: 'You got address', address });
 }
+
 const createAddress = async (req, res, next) => {
     const addressCount = await Address.countDocuments({ user: req.user.userId });
     if (addressCount >= 3) return next(new AppError('You can save upto 3 addresses.', 400));
 
-    const address = await Address.create({
+    const address = new Address({
         user: req.user.userId,
         ...req.body
     });
 
     if (!address) return next(new AppError('Address doest not created', 400));
 
+    if (addressCount === 0) {
+        address.isDefault = true;
+    }
+
+    await address.save();
+
     res.status(201).json({ success: true, message: 'New address created', address });
 }
+
 const updateAddress = async (req, res, next) => {
     const address = await Address.findById(req.params.id);
     if (!address || !isOwner(address.user, req.user.userId)) return next(new AppError('Address not found', 404));
@@ -41,6 +49,7 @@ const updateAddress = async (req, res, next) => {
 
     res.status(200).json({ success: true, message: 'Address updated', updatedAddress });
 }
+
 const deleteAddress = async (req, res, next) => {
     const address = await Address.findById(req.params.id);
     if (!address || !isOwner(address.user, req.user.userId)) return next(new AppError('Address not found', 404));
@@ -50,10 +59,31 @@ const deleteAddress = async (req, res, next) => {
     res.status(200).json({ success: true, message: 'Address deleted', address });
 }
 
+const selectDefaultAddress = async (req, res, next) => {
+    const address = await Address.findById(req.params.id);
+    if (!address || !isOwner(address.user, req.user.userId)) return next(new AppError('Address not found', 404));
+
+    if (address.isDefault) {
+        return res.status(200).json({ success: true, message: 'Default address selected' });
+    }
+    
+    const defaultAddress = await Address.findOne({ user: req.user.userId, isDefault: true });
+    if (!defaultAddress) return next(new AppError('Something went wrong', 400));
+    
+    defaultAddress.isDefault = false;
+    address.isDefault = true;
+
+    await defaultAddress.save();
+    await address.save();
+    
+    return res.status(200).json({ success: true, message: 'Default address selected' });
+}
+
 module.exports = {
     getAllAddresses,
     getAddress,
     createAddress,
     updateAddress,
-    deleteAddress
+    deleteAddress,
+    selectDefaultAddress
 }
