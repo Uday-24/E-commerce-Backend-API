@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Cart = require('../models/Cart');
 const jwt = require('jsonwebtoken');
 const { signAccessToken, signRefreshToken } = require('../utils/authUtils');
 const AppError = require('../utils/AppError');
@@ -10,6 +11,12 @@ const register = async (req, res, next) => {
     if (existingUser) return next(new AppError('Email already registered', 400));
 
     const user = new User({ name, email, password });
+
+    await Cart.create({
+        user: user._id,
+        products: []
+    });
+
     const accessToken = signAccessToken(user);
     const refreshToken = signRefreshToken(user);
 

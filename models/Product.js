@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Wishlist = require('./Wishlist');
+const Cart = require('./Cart');
 const reviewSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -62,6 +63,10 @@ productSchema.post('findOneAndDelete', async function (doc) {
         await Wishlist.updateMany(
             { products: doc._id },
             { $pull: { products: doc._id } }
+        );
+        await Cart.updateMany(
+            { 'products.product': doc._id },
+            { $pull: { products: { product: doc._id } } }
         );
     }
 });
