@@ -10,6 +10,7 @@ const productRoutes = require('./routes/productRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 connectDB();
@@ -24,6 +25,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => console.log('Server is running on 5000'))
